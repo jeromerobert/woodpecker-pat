@@ -1,0 +1,46 @@
+{
+    "editor.formatOnSave": true,
+    "rust-analyzer.checkOnSave": true,
+    "rust-analyzer.inlayHints.closureReturnTypeHints.enable": "always",
+    "rust-analyzer.inlayHints.expressionAdjustmentHints.enable": "always",
+    "rust-analyzer.inlayHints.lifetimeElisionHints.enable": "always",
+    "rust-analyzer.inlayHints.bindingModeHints.enable": true,
+    "rust-analyzer.inlayHints.lifetimeElisionHints.useParameterNames": true,
+    "lldb.showDisassembly": "auto",
+    "lldb.launch.sourceLanguages": [
+        "rust"
+    ],
+    "lldb.displayFormat": "auto",
+    "lldb.dereferencePointers": true,
+    "lldb.consoleMode": "commands",
+    "rust-analyzer.inlayHints.reborrowHints.enable": "always",
+    "editor.minimap.enabled": false,
+    "[rust]": {
+        "editor.defaultFormatter": "rust-lang.rust-analyzer"
+    },
+    "window.zoomLevel": -1,
+    "editor.fontSize": 14,
+    "diffEditor.renderSideBySide": false,
+    "extensions.ignoreRecommendations": true,
+    "editor.inlayHints.enabled": "offUnlessPressed",
+    "workbench.colorTheme": "Default Light+",
+    "editor.fontFamily": "JetBrains Mono",
+    "editor.fontLigatures": true,
+    "rust-analyzer.check.command": "clippy",
+    "rust-analyzer.check.extraArgs": [
+        "--",
+        "-Wclippy::pedantic",
+        "-Wclippy::cargo",
+        "-Wclippy::nursery",
+        "-Aclippy::cargo-common-metadata",
+        "-Aclippy::missing-panics-doc",
+        "-Aclippy::match-same-arms",
+        "-Aclippy::similar-names",
+        "-Aclippy::cast-possible-wrap",
+        "-Aclippy::cast-possible-truncation",
+        "-Aclippy::cast-precision-loss",
+        "-Aclippy::missing-errors-doc"
+    ],
+    "editor.formatOnPaste": true,
+    "rust-analyzer.cargo.buildScripts.enable": true
+}
