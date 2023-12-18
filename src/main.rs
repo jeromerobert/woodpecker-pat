@@ -1,7 +1,7 @@
 use clap::Parser;
 use hmac::{Hmac, Mac};
 use jwt::{header::HeaderType, AlgorithmType, Header, SignWithKey};
-use rusqlite::Connection;
+use rusqlite::{Connection, OpenFlags};
 use sha2::Sha256;
 use std::collections::BTreeMap;
 
@@ -22,7 +22,8 @@ struct CliOptions {
 
 fn main() {
     let options = CliOptions::parse();
-    let conn = Connection::open(options.sqlite_file).expect("Failed to open database");
+    let conn = Connection::open_with_flags(options.sqlite_file, OpenFlags::SQLITE_OPEN_READ_ONLY)
+        .expect("Failed to open database");
     let user_login = options.user_login.map_or_else(
         || {
             conn.query_row(
