@@ -20,6 +20,10 @@ struct CliOptions {
     sqlite_file: String,
 }
 
+fn map_query(row: &rusqlite::Row) -> rusqlite::Result<(u32, String)> {
+    row.get(0).and_then(|v1| row.get(1).map(|v2| (v1, v2)))
+}
+
 fn main() {
     let options = CliOptions::parse();
     let conn = Connection::open_with_flags(options.sqlite_file, OpenFlags::SQLITE_OPEN_READ_ONLY)
@@ -31,22 +35,22 @@ fn main() {
                 [],
                 |row| row.get::<_, String>(0),
             )
-            .map_or_else(
-                |_| {
-                    panic!("User not found or an error occurred.");
-                },
-                |user_login| user_login,
-            )
+            .unwrap_or_else(|e| {
+                panic!("User not found or an error occurred: {e}");
+            })
         },
         |n| n,
     );
-    let Ok(user_hash) = conn.query_row(
-        "SELECT user_hash FROM users WHERE user_login = ?1",
-        [&user_login],
-        |row| row.get::<_, String>(0),
-    ) else {
-        panic!("User not found or an error occurred.");
-    };
+    let (user_id, user_hash) = conn
+        .query_row(
+            "SELECT user_id, user_hash FROM users WHERE user_login = ?1",
+            [&user_login],
+            map_query,
+        )
+        .unwrap_or_else(|e| {
+            panic!("User not found or an error occurred: {e}");
+        });
+    let user_id = user_id.to_string();
     // The default header type in Rust jwt is empty while it's "JWT" in the Go jwt.
     let header = Header {
         algorithm: AlgorithmType::Hs256,
@@ -55,7 +59,7 @@ fn main() {
     };
     let mut claims = BTreeMap::new();
     claims.insert("type", "user");
-    claims.insert("text", &user_login);
+    claims.insert("user-id", &user_id);
     let hs256_key: Hmac<Sha256> = Hmac::new_from_slice(user_hash.as_bytes()).unwrap();
     let s = jwt::Token::new(header, claims).sign_with_key(&hs256_key);
     println!("{}", s.unwrap().as_str());
