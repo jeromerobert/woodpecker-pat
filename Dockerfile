@@ -9,4 +9,7 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 RUN curl -O https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init
 RUN chmod +x rustup-init
 RUN ./rustup-init -y --profile minimal --no-modify-path
+# Because Centos7 is no longer supported
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* \
+ && sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
 RUN yum install -y gcc sqlite-devel
