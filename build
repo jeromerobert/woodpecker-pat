@@ -1,6 +1,19 @@
 #! /bin/sh
-common="-v /etc/ssl/certs/ca-certificates.crt:/etc/pki/tls/certs/ca-bundle.crt --network=host"
-# Build an executable compitable with Centos 7 / Amazon Linux 2
-podman build $common --env RUSTUP_USE_CURL=1 -t woodpecker-pat-builder .
-podman run $common -v $HOME/.cargo/registry:/root/.cargo/registry -v $PWD:$PWD -w $PWD -it woodpecker-pat-builder cargo build --workspace --release
-strip target/release/woodpecker-pat
+
+x86_64() {
+  common="-v /etc/ssl/certs/ca-certificates.crt:/etc/pki/tls/certs/ca-bundle.crt --network=host"
+  # Build an executable compitable with Centos 7 / Amazon Linux 2
+  podman build $common --env RUSTUP_USE_CURL=1 -t woodpecker-pat-builder .
+  podman run $common -v $HOME/.cargo/registry:/root/.cargo/registry -v $PWD:$PWD -w $PWD -it woodpecker-pat-builder cargo build --workspace --release
+  strip target/release/woodpecker-pat
+}
+
+aarch64() {
+  arch=aarch64-unknown-linux-gnu
+  export RUSTFLAGS="-C linker=aarch64-linux-gnu-gcc -C target-feature=+crt-static"
+  cargo build --release --target $arch
+  aarch64-linux-gnu-strip target/$arch/release/woodpecker-pat
+}
+
+x86_64
+aarch64
