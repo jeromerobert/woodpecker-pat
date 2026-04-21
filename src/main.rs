@@ -24,13 +24,35 @@ fn map_query(row: &rusqlite::Row) -> rusqlite::Result<(u32, String)> {
     row.get(0).and_then(|v1| row.get(1).map(|v2| (v1, v2)))
 }
 
+/// Detects whether the database uses the new schema (id, login) or the old one
+/// (`user_id`, `user_login`)
+fn detect_columns(conn: &Connection) -> (&str, &str, &str) {
+    let mut stmt = conn
+        .prepare("PRAGMA table_info(users)")
+        .expect("Failed to query table info");
+
+    let columns: Vec<String> = stmt
+        .query_map([], |row| row.get::<_, String>(1))
+        .expect("Failed to read table info")
+        .map(|r| r.unwrap())
+        .collect();
+
+    // Check for the presence of the new 'login' column
+    if columns.iter().any(|c| c == "login") {
+        ("id", "login", "hash")
+    } else {
+        ("user_id", "user_login", "user_hash")
+    }
+}
+
 fn main() {
     let options = CliOptions::parse();
     let conn = Connection::open_with_flags(options.sqlite_file, OpenFlags::SQLITE_OPEN_READ_ONLY)
         .expect("Failed to open database");
+    let (id_col, login_col, hash_col) = detect_columns(&conn);
     let user_login = options.user_login.unwrap_or_else(|| {
         conn.query_row(
-            "SELECT user_login FROM users ORDER BY ROWID ASC LIMIT 1",
+            &format!("SELECT {login_col} FROM users ORDER BY ROWID ASC LIMIT 1"),
             [],
             |row| row.get::<_, String>(0),
         )
@@ -40,7 +62,7 @@ fn main() {
     });
     let (user_id, user_hash) = conn
         .query_row(
-            "SELECT user_id, user_hash FROM users WHERE user_login = ?1",
+            &format!("SELECT {id_col}, {hash_col} FROM users WHERE {login_col} = ?1"),
             [&user_login],
             map_query,
         )
