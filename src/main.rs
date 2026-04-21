@@ -1,6 +1,6 @@
 use clap::Parser;
 use hmac::{Hmac, Mac};
-use jwt::{header::HeaderType, AlgorithmType, Header, SignWithKey};
+use jwt::{AlgorithmType, Header, SignWithKey, header::HeaderType};
 use rusqlite::{Connection, OpenFlags};
 use sha2::Sha256;
 use std::collections::BTreeMap;
@@ -28,19 +28,16 @@ fn main() {
     let options = CliOptions::parse();
     let conn = Connection::open_with_flags(options.sqlite_file, OpenFlags::SQLITE_OPEN_READ_ONLY)
         .expect("Failed to open database");
-    let user_login = options.user_login.map_or_else(
-        || {
-            conn.query_row(
-                "SELECT user_login FROM users ORDER BY ROWID ASC LIMIT 1",
-                [],
-                |row| row.get::<_, String>(0),
-            )
-            .unwrap_or_else(|e| {
-                panic!("User not found or an error occurred: {e}");
-            })
-        },
-        |n| n,
-    );
+    let user_login = options.user_login.unwrap_or_else(|| {
+        conn.query_row(
+            "SELECT user_login FROM users ORDER BY ROWID ASC LIMIT 1",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .unwrap_or_else(|e| {
+            panic!("User not found or an error occurred: {e}");
+        })
+    });
     let (user_id, user_hash) = conn
         .query_row(
             "SELECT user_id, user_hash FROM users WHERE user_login = ?1",

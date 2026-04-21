@@ -1,13 +1,25 @@
 [package]
 name = "woodpecker-pat"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+version = "0.2.0"
+edition = "2024"
 
 [dependencies]
-clap = { version = "4.4.11", features = ["derive"] }
+clap = { version = "4.6.1", features = ["derive"] }
 hmac = "0.12.1"
 jwt = "0.16.0"
-rusqlite = { version = "0.30.0", features = ["bundled"] }
+rusqlite = { version = "0.39.0", features = ["bundled"] }
 sha2 = "0.10.8"
+
+[lints.rust]
+unused = "warn"
+warnings = "warn"
+unused_qualifications = "warn"
+nonstandard_style = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+cargo_common_metadata = "allow"
+multiple_crate_versions = "allow"
